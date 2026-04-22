@@ -1,7 +1,7 @@
 // ===== CONFIGURATION =====
 const CONFIG = {
-  SHEET_CSV_URL: "REPLACE_WITH_YOUR_PUBLISHED_GOOGLE_SHEET_CSV_URL",
-  FORM_URL: "REPLACE_WITH_YOUR_GOOGLE_FORM_URL",
+  SHEET_CSV_URL: "https://docs.google.com/forms/d/e/1FAIpQLScIHWnlUbTE1vkL6qnSUHVXJ7PypjxEXRYtag78qsAq3Z1DrA/viewform?usp=header",
+  FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLScIHWnlUbTE1vkL6qnSUHVXJ7PypjxEXRYtag78qsAq3Z1DrA/viewform?usp=publish-editor",
   USE_GOOGLE_SHEETS: true // Set to false if using products.json
 };
 
