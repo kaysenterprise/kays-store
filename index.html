@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kays Enterprise | Order Now</title>
+  <title>Kays Enterprise | Store</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root { --bg: #f5f7fa; --card: #fff; --primary: #2563eb; --text: #1f2937; --muted: #6b7280; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,8 +13,6 @@
     header { text-align: center; margin-bottom: 32px; }
     header h1 { font-size: 1.8rem; margin-bottom: 8px; }
     header p { color: var(--muted); }
-    
-    /* Product Grid */
     .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
     .product-card { background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
     .product-card:hover { transform: translateY(-4px); }
@@ -22,25 +21,24 @@
     .card-body h3 { font-size: 1.1rem; margin-bottom: 6px; }
     .price { color: var(--primary); font-weight: 600; font-size: 1.2rem; margin-bottom: 8px; }
     .desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 14px; min-height: 42px; }
-    .btn-order { display: block; width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; text-align: center; }
+    .btn-order { display: block; width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; }
     .btn-order:hover { opacity: 0.9; }
-    
-    /* Form Section */
     .order-section { background: var(--card); padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .order-section h2 { margin-bottom: 16px; }
     iframe { width: 100%; height: 650px; border: none; border-radius: 8px; }
     .footer { margin-top: 24px; text-align: center; font-size: 0.85rem; color: var(--muted); }
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>📦 Kays Enterprise Store</h1>
-      <p>Browse our products below. Click "Order Now" to fill out the secure form.</p>
+      <p>Browse products below. Click "Order Now" to complete your purchase.</p>
     </header>
 
     <div id="product-grid" class="product-grid">
-      <!-- Products load here -->
+      <div class="loading">Loading products...</div>
     </div>
 
     <div class="order-section">
@@ -52,32 +50,39 @@
   </div>
 
   <script>
-    // 1. Load products from JSON
-    fetch('products.json')
-      .then(res => res.json())
-      .then(products => {
-        const grid = document.getElementById('product-grid');
-        products.forEach(p => {
+    const SHEET_CSV_URL = "REPLACE_WITH_YOUR_PUBLISHED_GOOGLE_SHEET_CSV_URL";
+    const grid = document.getElementById('product-grid');
+
+    Papa.parse(SHEET_CSV_URL, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        grid.innerHTML = '';
+        results.data.forEach(p => {
+          if (!p.Name) return; // skip empty rows
           const card = document.createElement('div');
           card.className = 'product-card';
           card.innerHTML = `
-            <img src="${p.image}" alt="${p.name}" onerror="this.src='https://placehold.co/400x300?text=Image+Not+Found'">
+            <img src="${p.ImageURL || 'https://placehold.co/400x300?text=No+Image'}" alt="${p.Name}" onerror="this.src='https://placehold.co/400x300?text=Image+Error'">
             <div class="card-body">
-              <h3>${p.name}</h3>
-              <div class="price">${p.price}</div>
-              <div class="desc">${p.description}</div>
-              <button class="btn-order" onclick="scrollToForm('${p.name}')">Order Now</button>
+              <h3>${p.Name}</h3>
+              <div class="price">${p.Price}</div>
+              <div class="desc">${p.Description}</div>
+              <button class="btn-order" onclick="selectProduct('${p.Name.replace(/'/g, "\\'")}')">Order Now</button>
             </div>
           `;
           grid.appendChild(card);
         });
-      });
+      },
+      error: function() {
+        grid.innerHTML = '<p style="text-align:center;color:#d32f2f;">Failed to load products. Please refresh.</p>';
+      }
+    });
 
-    // 2. Scroll to form & copy product name to clipboard
-    function scrollToForm(productName) {
-      navigator.clipboard.writeText(productName).catch(() => {});
+    function selectProduct(name) {
+      navigator.clipboard.writeText(name).catch(() => {});
       document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
-      alert(`✅ Copied "${productName}" to clipboard!\nPaste it in the "Product" field below.`);
+      alert(`✅ Copied "${name}" to clipboard!\nPaste it in the "Product / Service" field below.`);
     }
   </script>
 </body>
